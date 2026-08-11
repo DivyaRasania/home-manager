@@ -156,7 +156,6 @@
     dust
     entr
     fd
-    openssh
     procs
     tldr
     unzip
