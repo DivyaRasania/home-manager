@@ -59,7 +59,6 @@
         gs   = "git status";
         gl   = "git log --oneline --graph --decorate --all";
         gp   = "git push";
-        gpf  = "git push --force-with-lease";
         gpl  = "git pull";
         gf   = "git fetch";
         gr   = "git restore";
