@@ -3,6 +3,10 @@
 {
   imports = [ lazyvim.homeManagerModules.default ];
 
+  # ---------------------------------------------------------------------------
+  # Home identity
+  # stateVersion should only change when you intentionally migrate HM state.
+  # ---------------------------------------------------------------------------
   home = {
     username = "div";
     homeDirectory = "/home/div";
@@ -10,6 +14,9 @@
   };
 
   programs = {
+    # -------------------------------------------------------------------------
+    # Simple CLI tools (enable-only)
+    # -------------------------------------------------------------------------
     bat.enable = true;
     btop.enable = true;
     eza.enable = true;
@@ -21,11 +28,16 @@
     ripgrep.enable = true;
     yazi.enable = true;
 
+    # Better git diffs/pagers
     delta = {
       enable = true;
       enableGitIntegration = true;
     };
 
+    # -------------------------------------------------------------------------
+    # Fish shell
+    # Login shell is still set via chsh; this manages config, aliases, plugins.
+    # -------------------------------------------------------------------------
     fish = {
       enable = true;
 
@@ -44,49 +56,59 @@
       };
 
       shellAliases = {
-        ls  = "eza --icons --group-directories-first";
-        l   = "eza --icons --group-directories-first";
-        la  = "eza -a --icons --group-directories-first";
-        ll  = "eza -la --icons --group-directories-first";
-        lt  = "eza --tree --icons --group-directories-first";
+        # listing (eza)
+        ls = "eza --icons --group-directories-first";
+        l = "eza --icons --group-directories-first";
+        la = "eza -a --icons --group-directories-first";
+        ll = "eza -la --icons --group-directories-first";
+        lt = "eza --tree --icons --group-directories-first";
         lta = "eza --tree -a --icons --group-directories-first";
 
-        ta  = "tmux attach";
+        # tmux
+        ta = "tmux attach";
         tls = "tmux ls";
-        tn  = "tmux new -s";
-        tk  = "tmux kill-session -t";
+        tn = "tmux new -s";
+        tk = "tmux kill-session -t";
 
+        # archives / network / misc
         tarnow = "tar acf";
-        untar  = "tar xvf";
-
+        untar = "tar xvf";
         ports = "ss -tulpen";
-        myip  = "curl 4.ident.me";
-
+        myip = "curl 4.ident.me";
         md = "mkdir -p";
-        c  = "clear";
-        h  = "history";
+        c = "clear";
+        h = "history";
       };
 
       plugins = with pkgs.fishPlugins; [
         { name = "autopair"; src = autopair.src; }
         { name = "colored-man-pages"; src = colored-man-pages.src; }
-        { name = "hydro"; src = hydro.src; }
-        { name = "sponge"; src = sponge.src; }
+        { name = "hydro"; src = hydro.src; } # prompt
+        { name = "sponge"; src = sponge.src; } # drop failed commands from history
       ];
     };
 
+    # -------------------------------------------------------------------------
+    # GitHub CLI
+    # config.yml is HM-managed (read-only). Auth tokens live in hosts.yml.
+    # If `gh auth login` fails on config.yml, temporarily replace the symlink
+    # with a writable file, log in, then re-run home-manager switch.
+    # -------------------------------------------------------------------------
     gh = {
       enable = true;
       gitCredentialHelper.enable = true;
       settings = {
-        # Keep config.yml complete so `gh auth login` doesn't need to mutate it.
-        # (HM still manages this file as a read-only symlink.)
+        # Pre-set fields so auth doesn't need to mutate config.yml as often.
         version = 1;
         git_protocol = "ssh";
         prompt = "enabled";
       };
     };
 
+    # -------------------------------------------------------------------------
+    # Git
+    # Use as: git s / git cm "msg" / git undo  (see alias block)
+    # -------------------------------------------------------------------------
     git = {
       enable = true;
       lfs.enable = true;
@@ -100,43 +122,55 @@
         init.defaultBranch = "main";
 
         alias = {
+          # staging
           a = "add";
           aa = "add --all";
           ap = "add --patch";
-          b = "branch";
-          ba = "branch -a";
-          bd = "branch -d";
+          unstage = "restore --staged";
+
+          # commit
           c = "commit";
           ca = "commit --amend";
           can = "commit --amend --no-edit";
           cm = "commit -m";
+          undo = "reset --soft HEAD~1";
+          wip = "!git add -A && git commit -m 'wip'";
+
+          # branches / navigation
+          b = "branch";
+          ba = "branch -a";
+          bd = "branch -d";
           co = "checkout";
           cb = "checkout -b";
+          sw = "switch";
+          swc = "switch -c";
+
+          # inspect
+          s = "status -sb";
           d = "diff";
           ds = "diff --staged";
-          f = "fetch";
           l = "log --oneline --graph --decorate --all";
           last = "log -1 HEAD --stat";
-          m = "merge";
+
+          # sync / history rewrite
+          f = "fetch";
           p = "push";
           pf = "push --force-with-lease";
           pl = "pull";
+          m = "merge";
           r = "restore";
+          rs = "restore --staged";
           rb = "rebase";
           rbi = "rebase -i";
-          rs = "restore --staged";
-          s = "status -sb";
           st = "stash";
           stp = "stash pop";
-          sw = "switch";
-          swc = "switch -c";
-          undo = "reset --soft HEAD~1";
-          unstage = "restore --staged";
-          wip = "!git add -A && git commit -m 'wip'";
         };
       };
     };
 
+    # -------------------------------------------------------------------------
+    # Dev tooling / editors
+    # -------------------------------------------------------------------------
     mise = {
       enable = true;
       enableFishIntegration = true;
@@ -147,6 +181,10 @@
       defaultEditor = true;
     };
 
+    # -------------------------------------------------------------------------
+    # Terminal multiplexer
+    # default-shell is fish; keep login shell change separate (chsh).
+    # -------------------------------------------------------------------------
     tmux = {
       enable = true;
       mouse = true;
@@ -157,17 +195,20 @@
       ];
     };
 
+    # -------------------------------------------------------------------------
+    # Directory jumper — `cd` is remapped to zoxide
+    # -------------------------------------------------------------------------
     zoxide = {
       enable = true;
       enableFishIntegration = true;
-
-      options = [
-        "--cmd cd"
-      ];
+      options = [ "--cmd cd" ];
     };
   };
 
-  # static fish completions (built at switch time — prefer this over `| source` at shell start)
+  # ---------------------------------------------------------------------------
+  # Fish completions
+  # Generated at `home-manager switch` time (avoids sourcing CLIs on shell start).
+  # ---------------------------------------------------------------------------
   xdg.configFile."fish/completions/gh.fish".source =
     pkgs.runCommand "gh-fish-completion" { nativeBuildInputs = [ pkgs.gh ]; } ''
       gh completion -s fish > $out
@@ -177,7 +218,10 @@
     pkgs.runCommand "tailscale-fish-completion" { nativeBuildInputs = [ pkgs.tailscale ]; } ''
       tailscale completion fish > $out
     '';
-  
+
+  # ---------------------------------------------------------------------------
+  # Extra packages (not covered by programs.*.enable above)
+  # ---------------------------------------------------------------------------
   home.packages = with pkgs; [
     duf
     dust
@@ -192,6 +236,7 @@
   ];
 
   fonts.fontconfig.enable = true;
-  
+
+  # Let Home Manager manage itself
   programs.home-manager.enable = true;
 }
