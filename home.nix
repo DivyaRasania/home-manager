@@ -55,16 +55,6 @@
         lt  = "eza --tree --icons --group-directories-first";
         lta = "eza --tree -a --icons --group-directories-first";
 
-        g    = "git";
-        gs   = "git status";
-        gl   = "git log --oneline --graph --decorate --all";
-        gp   = "git push";
-        gpl  = "git pull";
-        gf   = "git fetch";
-        gr   = "git restore";
-        grs  = "git restore --staged";
-        gcl  = "git clone";
-
         ta  = "tmux attach";
         tls = "tmux ls";
         tn  = "tmux new -s";
@@ -78,7 +68,6 @@
 
         md = "mkdir -p";
         c  = "clear";
-        chez = "chezmoi";
         h  = "history";
       };
 
@@ -106,6 +95,42 @@
         };
 
         init.defaultBranch = "main";
+
+        alias = {
+          a = "add";
+          aa = "add --all";
+          ap = "add --patch";
+          b = "branch";
+          ba = "branch -a";
+          bd = "branch -d";
+          c = "commit";
+          ca = "commit --amend";
+          can = "commit --amend --no-edit";
+          cm = "commit -m";
+          co = "checkout";
+          cb = "checkout -b";
+          d = "diff";
+          ds = "diff --staged";
+          f = "fetch";
+          l = "log --oneline --graph --decorate --all";
+          last = "log -1 HEAD --stat";
+          m = "merge";
+          p = "push";
+          pf = "push --force-with-lease";
+          pl = "pull";
+          r = "restore";
+          rb = "rebase";
+          rbi = "rebase -i";
+          rs = "restore --staged";
+          s = "status -sb";
+          st = "stash";
+          stp = "stash pop";
+          sw = "switch";
+          swc = "switch -c";
+          undo = "reset --soft HEAD~1";
+          unstage = "restore --staged";
+          wip = "!git add -A && git commit -m 'wip'";
+        };
       };
     };
 
@@ -117,17 +142,6 @@
     neovim = {
       enable = true;
       defaultEditor = true;
-    };
-
-    lazyvim = {
-      enable = true;
-      extras = {
-        lang.nix.enable = true;
-      };
-      extraPackages = with pkgs; [
-        lua-language-server
-        stylua
-      ];
     };
 
     tmux = {
@@ -149,6 +163,17 @@
       ];
     };
   };
+
+  # static fish completions (built at switch time — prefer this over `| source` at shell start)
+  xdg.configFile."fish/completions/gh.fish".source =
+    pkgs.runCommand "gh-fish-completion" { nativeBuildInputs = [ pkgs.gh ]; } ''
+      gh completion -s fish > $out
+    '';
+
+  xdg.configFile."fish/completions/tailscale.fish".source =
+    pkgs.runCommand "tailscale-fish-completion" { nativeBuildInputs = [ pkgs.tailscale ]; } ''
+      tailscale completion fish > $out
+    '';
   
   home.packages = with pkgs; [
     duf
@@ -156,6 +181,7 @@
     entr
     fd
     procs
+    tailscale
     tldr
     unzip
 
