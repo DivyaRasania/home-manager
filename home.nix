@@ -1,8 +1,6 @@
 { config, pkgs, lazyvim, ... }:
 
 {
-  imports = [ lazyvim.homeManagerModules.default ];
-
   # ---------------------------------------------------------------------------
   # Home identity
   # stateVersion should only change when you intentionally migrate HM state.

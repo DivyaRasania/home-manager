@@ -7,17 +7,12 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    lazyvim = {
-      url = "github:pfassina/lazyvim-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
     {
       nixpkgs,
       home-manager,
-      lazyvim,
       ...
     }:
     let
@@ -27,7 +22,6 @@
     {
       homeConfigurations."div" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = { inherit lazyvim; };
         modules = [ ./home.nix ];
       };
     };
