@@ -32,10 +32,6 @@
       interactiveShellInit = ''
         fish_add_path /nix/var/nix/profiles/default/bin ~/.nix-profile/bin
         fish_add_path ~/.local/bin
-
-        set hydro_symbol_git_dirty " [dirty]"
-        set hydro_symbol_git_ahead " [ahead]"
-        set hydro_symbol_git_behind " [behind]"
       '';
 
       functions.fish_greeting = {
@@ -82,6 +78,13 @@
     gh = {
       enable = true;
       gitCredentialHelper.enable = true;
+      settings = {
+        # Keep config.yml complete so `gh auth login` doesn't need to mutate it.
+        # (HM still manages this file as a read-only symlink.)
+        version = 1;
+        git_protocol = "ssh";
+        prompt = "enabled";
+      };
     };
 
     git = {
